@@ -5,7 +5,7 @@ var lazy = require("lazy");
 var Pdf = require("./core/pdf.js").Pdf;
 var request = require("request");
 // max download connections
-var downloadSem = require("semaphore")(32);
+var downloadSem = require("semaphore")(64);
 // max searched
 var searchSem = require("semaphore")(1);
 // ignore https, as it"s not supported by nodes http
@@ -117,9 +117,9 @@ function downloadUrl(url, callback) {
     });
 
     response.on("end", function() {
-      if (dataLen == 0) {
+      if (dataLen < 10) {
         downloadSem.leave();
-        callback(true);
+        callback(false);
         return;
       }
       var buf = new Buffer(dataLen);

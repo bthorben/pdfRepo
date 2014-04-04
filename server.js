@@ -28,6 +28,15 @@ mongoClient.open(function(err, mongoClient) {
   app.post("/pdfs/:fileid", function(req, res) {
     pdfs.insertPdf(repoDatabase, req, res);
   });
+  app.get("/task", function(req, res) {
+    task = {
+      id: 1,
+      type: "test",
+      fileid: 1
+    }
+    res.json(task);
+  });
+  app.use("/driver", express.static(__dirname + "/driver"));
 });
 
 app.listen(3000);
