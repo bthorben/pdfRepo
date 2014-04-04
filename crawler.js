@@ -5,7 +5,7 @@ var lazy = require("lazy");
 var Pdf = require("./core/pdf.js").Pdf;
 var request = require("request");
 // max download connections
-var downloadSem = require("semaphore")(10);
+var downloadSem = require("semaphore")(32);
 // max searched
 var searchSem = require("semaphore")(1);
 // ignore https, as it"s not supported by nodes http
@@ -52,11 +52,18 @@ function pdfsFromKeywordFile(keywordFilePath, outputFolder, callback) {
 
   function doWebsearch(keyword, callback) {
     // page 1
+    setTimeout(function() {
+      request(query_url + keyword + "&sourceid=opera", handleResponse);
+    }, (Math.random() * (20000 - 1000) + 1000));
     request(query_url + keyword, handleResponse);
     // page 2
-    request(query_url + keyword + "&start=10", handleResponse);
+    setTimeout(function() {
+      request(query_url + keyword + "&sourceid=opera&start=10", handleResponse);
+    }, (Math.random() * (50000 - 10000) + 10000));
     // page 3
-    request(query_url + keyword + "&start=20", handleResponse);
+    setTimeout(function() {
+      request(query_url + keyword + "&sourceid=opera&start=20", handleResponse);
+    }, (Math.random() * (80000 - 20000) + 20000));
 
     function handleResponse(error, response) {
       if (!error && response.statusCode == 200) {
@@ -111,6 +118,8 @@ function downloadUrl(url, callback) {
 
     response.on("end", function() {
       if (dataLen == 0) {
+        downloadSem.leave();
+        callback(true);
         return;
       }
       var buf = new Buffer(dataLen);
