@@ -9,7 +9,7 @@ var downloadSem = require("semaphore")(64);
 // max searched
 var searchSem = require("semaphore")(1);
 // ignore https, as it"s not supported by nodes http
-var PDF_REGEX_TEXT = "q=(http://(?!webcache)(?:[^ ](?!\\.pdf))*[^ ]\\.pdf)";
+var PDF_REGEX_TEXT = "q=(http://(?!webcache)(?:\\S(?!\\.pdf))*\\S\\.pdf)";
 var PDF_REGEX = new RegExp(PDF_REGEX_TEXT, "g");
 var DEFAUL_SOURCE = "websearch";
 
@@ -55,7 +55,6 @@ function pdfsFromKeywordFile(keywordFilePath, outputFolder, callback) {
     setTimeout(function() {
       request(query_url + keyword + "&sourceid=opera", handleResponse);
     }, (Math.random() * (20000 - 1000) + 1000));
-    request(query_url + keyword, handleResponse);
     // page 2
     setTimeout(function() {
       request(query_url + keyword + "&sourceid=opera&start=10", handleResponse);

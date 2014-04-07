@@ -6,16 +6,22 @@ var util = require('./util.js');
 var Pdf = require("./pdf.js").Pdf;
 
 
-module.exports.getOverview = function getOverview(db, req, res) {
+module.exports.getList = function getList(db, req, res) {
   var pdfCount = 0;
   db.collection("pdfs", function(err, collection) {
-    var f = collection.find({}, { fileid: 1, _id:0 });
+    var f = collection.find({}, { fileid: 1, url: 1, source: 1, _id:0 });
     f.toArray(function(err, items) {
-      var result = "There are " + items.length + " pdfs in the corpus<br>";
-      for (var i = items.length - 1; i >= 0; i--) {
-        result += "<br>" + util.padLeft(i, "0", 5) + ": " +  items[i].fileid;
-      };
-      res.send(result);
+      res.send(items);
+    });
+  });
+}
+
+module.exports.getCount = function getCount(db, req, res) {
+  var pdfCount = 0;
+  db.collection("pdfs", function(err, collection) {
+    collection.count(function(err, count) {
+      console.log(count);
+      res.send(count + "");
     });
   });
 }
