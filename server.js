@@ -48,6 +48,9 @@ mongoClient.open(function(err, mongoClient) {
   app.get("/task", function(req, res) {
     tasks.getTask(repoDatabase, req, res);
   });
+  app.post("/task/:taskid/result", function(req, res) {
+    tasks.addResult(repoDatabase, req, res);
+  });
   app.post("/tasks/all", function(req, res) {
     tasks.insertTaskForAllFiles(repoDatabase, req, res);
   });

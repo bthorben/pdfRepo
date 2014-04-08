@@ -11,40 +11,62 @@
 
   window.work = function work() {
     getTask(function(task) {
-      processTask(task, function success(result) {
-        log("Finished " + task._id +
-            " (fileid: " + task.fileid + ") with result:");
-        log(JSON.stringify(result, null, 2));
-        work();
-      }, function error() {
-        log("Error processing " + task._id);
-        work();
-      })
+      processTask(task, function success(error, result) {
+        if (error) {
+          log("Error processing " + task._id);
+          //work();
+        } else {
+          log("Finished " + task._id +
+              " (fileid: " + task.fileid + ") with result:");
+          log(JSON.stringify(result, null, 2));
+          log("Uploading result ...");
+          postData("task/" + task._id + "/result", result, function(error) {
+            if (error) {
+              log("Error!");
+            } else {
+              log("Finished");
+            }
+            work();
+          });
+        }
+      });
     });
   }
 
   function getTask(callback) {
-    makeRequest("task", function() {
-      var response = this.responseText;
-      var task = JSON.parse(response);
-      callback(task);
-    }, function() {
-      log("Error getting task");
-    })
+    makeRequest("task", function(error, response) {
+      if (error) {
+        log("Error getting task, aborting");
+      } else {
+        if (response == "null") {
+          // means: there are no more tasks available
+          log("No more tasks to process");
+        } else {
+          var task = JSON.parse(response);
+          callback(task);
+        }
+      }
+    });
   }
 
-  function processTask(task, successCallback, errorCallback) {
-    var taskRunner;
-    switch(task.type) {
-      case "benchmark":
-        taskRunner = new BenchmarkTask(task, log, successCallback, errorCallback);
-        break;
-      default:
-        errorCallback("Don't know how to handle this type of task");
+  function processTask(task, callback) {
+    var taskWindow = window.open("taskDriver.html", "_blank", "width=1000, height=1000");
+    var received = false;
+    function receiveMessage(event) {
+      var response = event.data;
+      if (typeof response == "string") {
+        if (response == "ready") {
+          taskWindow.postMessage(task, "*");
+        } else {
+          log(response);
+        }
+      } else {
+        callback(response.error, response.result);
+        window.removeEventListener("message", receiveMessage);
+      }
     }
-    taskRunner.run();
+    window.addEventListener("message", receiveMessage);
   }
-
 
   function getQueryParameters() {
     var qs = window.location.search.substring(1);
@@ -59,18 +81,34 @@
 
   function log(message) {
     stdout.innerHTML += message + "\n";
-    if (message.lastIndexOf('\n') >= 0) {
-      if ((stdout.scrollHeight - stdout.scrollTop) <= stdout.offsetHeight) {
-        stdout.scrollTop = stdout.scrollHeight;
-      }
-    }
+    stdout.innerHTML = stdout.innerHTML.slice(-10000);
+    stdout.scrollTop = stdout.scrollHeight;
   }
 
-  function makeRequest(target, callback, errorCallback) {
+  function makeRequest(target, callback) {
     var r = new XMLHttpRequest();
-    r.onload = callback;
-    r.onerror = errorCallback;
+    var c = function(error) {
+      var response = r.responseText;
+      callback(error, response);
+    }
+    r.onload = c.bind(null, false);
+    r.onerror = c.bind(null, true);
+
     r.open("GET", "../" + target);
     r.send();
+  }
+
+  function postData(target, object, callback) {
+    var r = new XMLHttpRequest();
+    var c = function(error) {
+      var response = r.responseText;
+      callback(error, response);
+    }
+    r.onload = c.bind(null, false);
+    r.onerror = c.bind(null, true);
+
+    r.open("POST", "../" + target);
+    r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    r.send(JSON.stringify(object));
   }
 })();
