@@ -5,7 +5,7 @@ var BenchmarkTaskPrototype = function() {
   this.numberOfRuns = 5;
 
   this.combineResults = function(results) {
-    var i, j, resultsOfPage, sum, combinedResults = [];
+    var i, j, resultsOfPage, sum, combinedResults = [], avg, variance = [];
     for (i = 0; i < this.numberOfPages; i++) {
       resultsOfPage = [];
       for (j = 0; j < this.numberOfRuns; j++) {
@@ -14,17 +14,33 @@ var BenchmarkTaskPrototype = function() {
       resultsOfPage.sort();
       sum = 0;
       numResults = 0;
-      for (j = 1; j < this.numberOfRuns - 1; j++) {
+      for (j = 1; j < this.numberOfRuns; j++) {
         var rop = resultsOfPage[j]
         if (rop) {
           sum += rop;
           numResults++;
         }
       }
-      combinedResults[i] = sum / numResults;
+      avg = sum / numResults;
+      sum = 0;
+      for (j = 1; j < this.numberOfRuns; j++) {
+        var rop = resultsOfPage[j]
+        if (rop) {
+          sum += (rop - avg) * (rop - avg);
+          numResults++;
+        }
+      }
+      variance[i] = Math.sqrt(sum / numResults);
+      combinedResults[i] = avg;
     };
 
-    return combinedResults;
+    var r = {
+      "timesPerPage": combinedResults,
+      "variance": variance,
+      "originalRuns": results
+    }
+
+    return r;
   }
 
   this.testPage = function(pdfDocument, pageNumber, callback) {
@@ -33,7 +49,6 @@ var BenchmarkTaskPrototype = function() {
     document.body.appendChild(dummyCanvas);
     var context = dummyCanvas.getContext("2d");
     var start = performance.now();
-    console.log(this.pdfDocument);
     pdfDocument.getPage(this.currentPage).then(function(page) {
       var viewport = page.getViewport(1.0);
       dummyCanvas.height = viewport.height;

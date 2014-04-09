@@ -29,6 +29,7 @@
     var taskRunner;
     switch(task.type) {
       case "benchmark":
+      case "calibration":
         taskRunner = new BenchmarkTask(task, callback, log);
         break;
       default:

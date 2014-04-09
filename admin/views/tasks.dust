@@ -1,0 +1,25 @@
+{>header /}
+<h1>Total Pdfs: <span id="pdfcount"></span></h1>
+<table class="table tasks">
+  <colgroup>
+    <col width="20%" />
+    <col width="20%" />
+    <col width="20%" />
+    <col width="40%" />
+  </colgroup>
+  <tr>
+    <th>Type</th>
+    <th>Fileid</th>
+    <th>Created</th>
+    <th>Result</th>
+  </tr>
+  {#tasks}
+  <tr>
+    <td>{type}</td>
+    <td>{fileid}</td>
+    <td>{creationDate}</td>
+    <td>{result}</td>
+  </tr>
+  {/tasks}
+</table>
+{>footer /}

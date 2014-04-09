@@ -1,0 +1,8 @@
+{>header /}
+<p>Total Pdfs: {pdfcount}</p>
+<p>Total Tasks: {taskcount}</p>
+
+<p>
+  {histogramData}
+</p>
+{>footer /}

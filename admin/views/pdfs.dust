@@ -1,0 +1,22 @@
+{>header /}
+<h1>Total Pdfs: <span id="pdfcount"></span></h1>
+<table class="table pdfs">
+  <colgroup>
+      <col width="25%" />
+      <col width="65%" />
+      <col width="15%" />
+  </colgroup>
+  <tr>
+    <th>Fileid</th>
+    <th>Url</th>
+    <th>Source</th>
+  </tr>
+  {#pdfs}
+  <tr>
+    <td>{fileid}</td>
+    <td>{url}</td>
+    <td>{source}</td>
+  </tr>
+  {/pdfs}
+</table>
+{>footer /}

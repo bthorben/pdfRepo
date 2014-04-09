@@ -1,3 +1,4 @@
+var assert = require("assert");
 var Busboy = require("busboy");
 var mongo = require("Mongodb");
 var inspect = require("util").inspect;
@@ -5,48 +6,65 @@ var util = require('./util.js');
 
 var Task = require("./task.js").Task;
 
+var RESEND_TASKS_AFTER_S = 3600;
 
-module.exports.getList = function getList(db, req, res) {
+
+module.exports.getList = function getList(db, req, callback) {
   db.collection("tasks", function(err, collection) {
     var f = collection.find({}, {
       type: 1, fileid: 1, creationDate: 1, result: 1, _id:0
     });
-    f.toArray(function(err, items) {
-      res.send(items);
-    });
+    f.sort([["result", -1]]);
+    f.toArray(callback);
   });
 }
 
-module.exports.getCount = function getCount(db, req, res) {
+module.exports.getCount = function getCount(db, req, callback) {
   db.collection("tasks", function(err, collection) {
-    collection.count(function(err, count) {
-      console.log(count);
-      res.send(count + "");
-    });
+    collection.count(callback);
   });
 }
 
-module.exports.getTask = function getTask(db, req, res) {
+module.exports.getTask = function getTask(db, req, callback) {
   db.collection("tasks", function(err, collection) {
-    // TODO: resend tasks that have been send already an hour ago
-    collection.findOne({ result: null, sentDate: null }, function(err, task) {
+    var currentTime = Date.now() / 1000 | 0;
+    var okayToResend = currentTime - RESEND_TASKS_AFTER_S;
+    collection.findOne({
+      "result": null,
+      $or: [
+          { "sentDate": { $lt: okayToResend } },
+          { "sentDate": null }
+      ]
+    }, function(err, task) {
       if (!task) {
-        res.send("null");
+        callback("no task found");
         return;
       }
-      var currentTime = Date.now() / 1000 | 0;
       collection.update({ _id: task._id },
                         { $set: { sentDate: currentTime }},
-                        { w: 1}, function(err, result) {
-        if (err) {
+                        { w: 1 }, function(err, result) {
+        if (err || result != 1) {
+          console.log("Error while updating result of task");
+          console.log("result", result);
+          console.log("error", err);
           res.send(200, "An error has occurred while getting Task");
         } else {
           console.log("Sent Task " + task._id +
                       " (fileid: " + task.fileid + ") to a client");
-          res.json(task);
+          callback(null, task);
         }
       });
     });
+  });
+}
+
+module.exports.getResults = function getTask(db, type, callback) {
+  db.collection("tasks", function(err, collection) {
+    var f = collection.find({
+      "result": { $ne: null },
+      "type": type
+    }, { result: 1, _id: 0 });
+    f.toArray(callback);
   });
 }
 
@@ -63,8 +81,11 @@ module.exports.addResult = function addResult(db, req, res) {
       var result = req.body;
       collection.update({ "_id": task._id },
                         { $set: { "result": result }},
-                        { w: 1}, function(err, result) {
-        if (err) {
+                        { w: 1 }, function(err, result) {
+        if (err || result != 1) {
+          console.log("Error while updating result of task");
+          console.log("result", result);
+          console.log("error", err);
           res.send(200, "An error has occurred while saving results");
         } else {
           console.log("Saved Result of task " + task._id +

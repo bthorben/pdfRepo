@@ -1,4 +1,8 @@
 (function DriverClosure() {
+
+  var BETWEEN_MESSAGES_MAX_WAIT = 30000;
+  var CALIBRATION_PDF = "calibration.pdf";
+
   var stdout;
   var queryParams;
 
@@ -6,43 +10,70 @@
     stdout = document.getElementById("stdout");
     queryParams = getQueryParameters();
     // start working from another context to not let the browser load forever
-    setTimeout(work, 0);
+    setTimeout(function () {
+      calibrate(function() {
+        work();
+      })
+    }, 0);
   };
+
+  window.calibrate = function calibrate(callback) {
+    var calibrationTask = {
+      file: CALIBRATION_PDF,
+      type: "calibration"
+    }
+    processTask(calibrationTask, function(error, result) {
+      if (error) {
+        log("Error calibrating, cannot continue");
+        return;
+      }
+      var times = result.timesPerPage, sum = 0, i;
+      for (i = 0; i < times.length; i++) {
+        sum += times[i];
+      }
+      this.baseline = sum / times.length;
+      log("Calibration finished. Baseline: " + this.baseline);
+      callback();
+    })
+  }
 
   window.work = function work() {
     getTask(function(task) {
+      log("Processing " + task._id +
+          " (fileid: " + task.fileid + ")");
       processTask(task, function success(error, result) {
         if (error) {
           log("Error processing " + task._id);
-          //work();
+          result = { "Error": error };
         } else {
           log("Finished " + task._id +
               " (fileid: " + task.fileid + ") with result:");
+          result.baseline = this.baseline;
           log(JSON.stringify(result, null, 2));
           log("Uploading result ...");
-          postData("task/" + task._id + "/result", result, function(error) {
-            if (error) {
-              log("Error!");
-            } else {
-              log("Finished");
-            }
-            work();
-          });
         }
+        postData("task/" + task._id + "/result", result, function(error) {
+          if (error) {
+            log("Error!");
+          } else {
+            log("Finished");
+          }
+          work();
+        });
       });
     });
   }
 
   function getTask(callback) {
-    makeRequest("task", function(error, response) {
+    makeRequest("task", function(error, task) {
       if (error) {
         log("Error getting task, aborting");
       } else {
-        if (response == "null") {
+        if (task == "null") {
           // means: there are no more tasks available
           log("No more tasks to process");
         } else {
-          var task = JSON.parse(response);
+          task = JSON.parse(task);
           callback(task);
         }
       }
@@ -50,9 +81,32 @@
   }
 
   function processTask(task, callback) {
-    var taskWindow = window.open("taskDriver.html", "_blank", "width=1000, height=1000");
+    var taskWindow = window.open("taskDriver.html", "_blank");
     var received = false;
+    var processingTimeout;
+
+    resetTimeout();
+    window.addEventListener("message", receiveMessage);
+
+    function resetTimeout() {
+      window.clearTimeout(processingTimeout);
+      processingTimeout = window.setTimeout(handleResult.bind(null,
+                                                              "Timeout",
+                                                              null),
+                                            BETWEEN_MESSAGES_MAX_WAIT);
+    }
+
+    function handleResult(error, result) {
+      callback(error, result);
+      window.removeEventListener("message", receiveMessage);
+      taskWindow.close();
+    }
+
     function receiveMessage(event) {
+      if (event.source != taskWindow) {
+        return;
+      }
+      resetTimeout();
       var response = event.data;
       if (typeof response == "string") {
         if (response == "ready") {
@@ -63,9 +117,11 @@
       } else {
         callback(response.error, response.result);
         window.removeEventListener("message", receiveMessage);
+        window.clearTimeout(processingTimeout);
+        taskWindow.close();
       }
     }
-    window.addEventListener("message", receiveMessage);
+
   }
 
   function getQueryParameters() {

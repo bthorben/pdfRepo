@@ -7,10 +7,14 @@ var TaskPrototype = function() {
     this.callback = callback;
     this.log = log;
     this.results = [];
+    if (this.dbTask.type == "calibration") {
+      this.fileUrl = this.dbTask.file;
+    } else {
+      this.fileUrl = "../pdfs/" + this.dbTask.fileid + "/file";
+    }
   }
 
   this.run = function() {
-    this.fileUrl = "../pdfs/" + this.dbTask.fileid + "/file";
     this.currentRun = -1;
     this.computeRun();
   }

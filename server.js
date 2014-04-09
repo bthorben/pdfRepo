@@ -1,7 +1,5 @@
 var express = require("express");
 var mongo = require("Mongodb");
-var inspect = require("util").inspect;
-var fs = require("fs");
 var pdfs = require("./core/pdfs.js");
 var Pdf = require("./core/pdf.js").Pdf;
 var tasks = require("./core/tasks.js");
@@ -19,18 +17,23 @@ var mongoClient = new mongo.MongoClient(new mongo.Server('localhost', 27017));
 mongoClient.open(function(err, mongoClient) {
   /* Static stuff */
   app.use("/driver", express.static(__dirname + "/driver"));
-  app.use("/admin", express.static(__dirname + "/admin"));
 
   var repoDatabase = mongoClient.db("pdfRepo");
   /* Pdf handling */
   app.get("/pdfs", function(req, res) {
-    pdfs.getList(repoDatabase, req, res);
+    pdfs.getList(repoDatabase, req, function(err, items) {
+      res.json(items);
+    });
   });
   app.get("/pdfcount", function(req, res) {
-    pdfs.getCount(repoDatabase, req, res);
+    pdfs.getCount(repoDatabase, req, function(err, count) {
+      res.send(count);
+    });
   });
   app.get("/pdfs/:fileid", function(req, res) {
-    pdfs.getPdf(repoDatabase, req, res);
+    pdfs.getPdf(repoDatabase, req, function(err, pdf) {
+      res.json(pdf);
+    });
   });
   app.get("/pdfs/:fileid/file", function(req, res) {
     pdfs.getPdffile(repoDatabase, req, res);
@@ -40,13 +43,23 @@ mongoClient.open(function(err, mongoClient) {
   });
   /* Tasks handling */
   app.get("/tasks", function(req, res) {
-    tasks.getList(repoDatabase, req, res);
+    tasks.getList(repoDatabase, req, function(err, items) {
+      res.json(items);
+    });
   });
   app.get("/taskcount", function(req, res) {
-    tasks.getCount(repoDatabase, req, res);
+    tasks.getCount(repoDatabase, req, function(err, count) {
+      res.send(count);
+    });
   });
   app.get("/task", function(req, res) {
-    tasks.getTask(repoDatabase, req, res);
+    tasks.getTask(repoDatabase, req, function(err, task) {
+      if (err) {
+        res.send(err);
+      } else {
+        res.json(task);
+      }
+    });
   });
   app.post("/task/:taskid/result", function(req, res) {
     tasks.addResult(repoDatabase, req, res);

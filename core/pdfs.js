@@ -6,32 +6,23 @@ var util = require('./util.js');
 var Pdf = require("./pdf.js").Pdf;
 
 
-module.exports.getList = function getList(db, req, res) {
-  var pdfCount = 0;
+module.exports.getList = function getList(db, req, callback) {
   db.collection("pdfs", function(err, collection) {
     var f = collection.find({}, { fileid: 1, url: 1, source: 1, _id:0 });
-    f.toArray(function(err, items) {
-      res.send(items);
-    });
+    f.toArray(callback);
   });
 }
 
-module.exports.getCount = function getCount(db, req, res) {
-  var pdfCount = 0;
+module.exports.getCount = function getCount(db, req, callback) {
   db.collection("pdfs", function(err, collection) {
-    collection.count(function(err, count) {
-      console.log(count);
-      res.send(count + "");
-    });
+    collection.count(callback);
   });
 }
 
-module.exports.getPdf = function getPdf(db, req, res) {
+module.exports.getPdf = function getPdf(db, req, callback) {
   var fileid = req.params.fileid;
   db.collection("pdfs", function(err, collection) {
-    collection.findOne({ "fileid": fileid }, function(err, pdf) {
-      res.send(pdf);
-    });
+    collection.findOne({ "fileid": fileid }, callback);
   });
 }
 
