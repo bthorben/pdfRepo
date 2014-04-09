@@ -37,7 +37,7 @@ mongoClient.open(function(err, mongoClient) {
             "title": "PdfRepo - Dashboard",
             "pdfcount": pdfcount,
             "taskcount": taskcount,
-            "histogramData": inspect(h)
+            "histogramData": h
           });
         });
 

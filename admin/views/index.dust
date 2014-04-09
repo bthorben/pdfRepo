@@ -2,7 +2,20 @@
 <p>Total Pdfs: {pdfcount}</p>
 <p>Total Tasks: {taskcount}</p>
 
-<p>
-  {histogramData}
-</p>
+<canvas id="h" width="800" height="600"></canvas>
+<script>
+var data = {
+  labels : [{histogramData.buckets}],
+  datasets : [
+    {
+      fillColor : "rgba(220,220,220,0.5)",
+      strokeColor : "rgba(220,220,220,1)",
+      data : [{histogramData.data}]
+    }
+  ]
+};
+var ctx = document.getElementById("h").getContext("2d");
+var myNewChart = new Chart(ctx).Bar(data);
+</script>
+
 {>footer /}

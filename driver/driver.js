@@ -1,6 +1,6 @@
 (function DriverClosure() {
 
-  var BETWEEN_MESSAGES_MAX_WAIT = 30000;
+  var BETWEEN_MESSAGES_MAX_WAIT = 120000;
   var CALIBRATION_PDF = "calibration.pdf";
 
   var stdout;
