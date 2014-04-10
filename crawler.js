@@ -38,6 +38,7 @@ function pdfsFromKeywordFile(keywordFilePath, outputFolder, callback) {
   var request_count = 0;
   var keywordFile = new lazy(fs.createReadStream(keywordFilePath));
   keywordFile.lines.forEach(function(keyword) {
+    console.log("Searching for " + keyword);
     request_count += 3;
     doWebsearch(keyword, function(success) {
       if (!success) {
@@ -51,17 +52,18 @@ function pdfsFromKeywordFile(keywordFilePath, outputFolder, callback) {
   });
 
   function doWebsearch(keyword, callback) {
+    console.log("Requesting " + query_url + keyword + " ...");
     // page 1
     setTimeout(function() {
-      request(query_url + keyword + "&sourceid=opera", handleResponse);
+      request(query_url + keyword, handleResponse);
     }, (Math.random() * (20000 - 1000) + 1000));
     // page 2
     setTimeout(function() {
-      request(query_url + keyword + "&sourceid=opera&start=10", handleResponse);
+      request(query_url + keyword + "&start=10", handleResponse);
     }, (Math.random() * (50000 - 10000) + 10000));
     // page 3
     setTimeout(function() {
-      request(query_url + keyword + "&sourceid=opera&start=20", handleResponse);
+      request(query_url + keyword + "&start=20", handleResponse);
     }, (Math.random() * (80000 - 20000) + 20000));
 
     function handleResponse(error, response) {
@@ -69,10 +71,12 @@ function pdfsFromKeywordFile(keywordFilePath, outputFolder, callback) {
         var match;
         while(match = PDF_REGEX.exec(response.body)) {
           var url = decodeURIComponent(match[1]);
+          console.log("found " + url);
           urls[url] = true;
         }
         callback(true);
       } else {
+        console.log(response.statusCode);
         callback(false)
       }
     }

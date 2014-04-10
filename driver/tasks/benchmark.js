@@ -1,10 +1,13 @@
-var BenchmarkTask = function(dbTask, callback, log) {
-  this.init(dbTask, callback, log);
+var BenchmarkTask = function(dbTask, callback, report, onlyTestPageNumber) {
+  this.init(dbTask, callback, report, onlyTestPageNumber);
 }
 var BenchmarkTaskPrototype = function() {
   this.numberOfRuns = 5;
 
   this.combineResults = function(results) {
+    if (this.onlyTestPageNumber) {
+      return;
+    }
     var i, j, resultsOfPage, sum, combinedResults = [], avg, variance = [];
     for (i = 0; i < this.numberOfPages; i++) {
       resultsOfPage = [];
@@ -59,7 +62,9 @@ var BenchmarkTaskPrototype = function() {
       };
       page.render(renderContext).promise.then(function success() {
         var timeSpent = performance.now() - start;
-        callback(null, timeSpent);
+        setTimeout(function() {
+          callback(null, timeSpent);
+        }, 10);
       }.bind(this));
     }.bind(this), function error() {
         callback("can't get page");

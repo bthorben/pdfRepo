@@ -21,12 +21,12 @@ mongoClient.open(function(err, mongoClient) {
   var repoDatabase = mongoClient.db("pdfRepo");
   /* Pdf handling */
   app.get("/pdfs", function(req, res) {
-    pdfs.getList(repoDatabase, req, function(err, items) {
+    pdfs.getList(repoDatabase, function(err, items) {
       res.json(items);
     });
   });
   app.get("/pdfcount", function(req, res) {
-    pdfs.getCount(repoDatabase, req, function(err, count) {
+    pdfs.getCount(repoDatabase, function(err, count) {
       res.send(count);
     });
   });
@@ -43,17 +43,17 @@ mongoClient.open(function(err, mongoClient) {
   });
   /* Tasks handling */
   app.get("/tasks", function(req, res) {
-    tasks.getList(repoDatabase, req, function(err, items) {
+    tasks.getList(repoDatabase, {}, function(err, items) {
       res.json(items);
     });
   });
   app.get("/taskcount", function(req, res) {
-    tasks.getCount(repoDatabase, req, function(err, count) {
+    tasks.getCount(repoDatabase, function(err, count) {
       res.send(count);
     });
   });
   app.get("/task", function(req, res) {
-    tasks.getTask(repoDatabase, req, function(err, task) {
+    tasks.getTask(repoDatabase, function(err, task) {
       if (err) {
         res.send(err);
       } else {

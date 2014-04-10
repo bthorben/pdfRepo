@@ -1,11 +1,12 @@
-var Task = function(dbTask, callback, log) {
-  this.init(dbTask, callback, log);
+var Task = function(dbTask, callback, report, onlyTestPageNumber) {
+  this.init(dbTask, callback, report, onlyTestPageNumber);
 }
 var TaskPrototype = function() {
-  this.init = function(dbTask, callback, log) {
+  this.init = function(dbTask, callback, report, onlyTestPageNumber) {
     this.dbTask = dbTask;
     this.callback = callback;
-    this.log = log;
+    this.report = report;
+    this.onlyTestPageNumber = onlyTestPageNumber;
     this.results = [];
     if (this.dbTask.type == "calibration") {
       this.fileUrl = this.dbTask.file;
@@ -21,23 +22,32 @@ var TaskPrototype = function() {
 
   this.computeRun = function() {
     this.currentRun++;
-    if (this.currentRun >= this.numberOfRuns) {
+    if (this.currentRun >= this.numberOfRuns
+        || (this.onlyTestPageNumber && this.currentRun == 1)) {
       var combinedResults = this.combineResults(this.results);
       this.callback(null, combinedResults);
       return;
     }
-    this.log("=== Run " + this.currentRun + " ===");
+    this.report({
+      type: "run",
+      value: this.currentRun
+    });
     this.results[this.currentRun] = [];
     // first page is 1
-    this.currentPage = 0;
+    this.currentPage = this.onlyTestPageNumber - 1 || 0;
     var numberOfPages;
     PDFJS.getDocument(this.fileUrl).then(function(pdfDoc) {
       this.pdfDocument = pdfDoc;
-      this.numberOfPages = pdfDoc.numPages;
+      this.numberOfPages = this.onlyTestPageNumber || pdfDoc.numPages;
+      this.report({
+        type: "totalPages",
+        value: this.numberOfPages
+      });
       this.testNextPage(function() {
         this.computeRun();
       }.bind(this));
     }.bind(this));
+
   }
 
   this.testNextPage = function(callback) {
@@ -46,9 +56,10 @@ var TaskPrototype = function() {
       callback();
       return;
     }
-    this.log("Processing page " + this.currentPage +
-             " / " + this.numberOfPages);
-
+    this.report({
+      type: "page",
+      value: this.currentPage
+    });
 
     this.testPage(this.pdfDocument,
                   this.currentPage,
@@ -57,11 +68,10 @@ var TaskPrototype = function() {
 
   this.testPageCallback = function(callback, error, result) {
     if (error) {
-      var msg = {
-        "Error": error,
-        "Page": this.currentPage
-      }
-      this.log(msg);
+      this.report({
+        type: "error",
+        value: this.currentPage
+      });
     }
     this.results[this.currentRun].push(result);
     this.testNextPage(callback);

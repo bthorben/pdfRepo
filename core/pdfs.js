@@ -6,14 +6,14 @@ var util = require('./util.js');
 var Pdf = require("./pdf.js").Pdf;
 
 
-module.exports.getList = function getList(db, req, callback) {
+module.exports.getList = function getList(db, callback) {
   db.collection("pdfs", function(err, collection) {
     var f = collection.find({}, { fileid: 1, url: 1, source: 1, _id:0 });
     f.toArray(callback);
   });
 }
 
-module.exports.getCount = function getCount(db, req, callback) {
+module.exports.getCount = function getCount(db, callback) {
   db.collection("pdfs", function(err, collection) {
     collection.count(callback);
   });

@@ -24,8 +24,8 @@ module.exports.getHistogramData = function(results, options) {
 
   normalizedData.sort();
 
-  var numberOfBuckets = options.numberOfBuckets || 10;
-  var maxValue = options.maxValue || 3;
+  var numberOfBuckets = options.numberOfBuckets || 40;
+  var maxValue = options.maxValue || 8;
   var step = maxValue / numberOfBuckets;
 
   var buckets = [];
@@ -38,9 +38,14 @@ module.exports.getHistogramData = function(results, options) {
       count++;
       j++;
     }
-    buckets.push(smallerThan);
+    buckets.push(smallerThan.toFixed(2));
     data.push(count);
   };
+  buckets.push("'Larger'");
+  data.push(normalizedData.length - j);
 
-  return { "buckets": buckets, "data": data };
+  return {
+    "buckets": buckets,
+    "data": data,
+    "totalPages": normalizedData.length };
 }

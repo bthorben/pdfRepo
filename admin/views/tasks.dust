@@ -1,24 +1,28 @@
 {>header /}
-<h1>Total Pdfs: <span id="pdfcount"></span></h1>
+<h1>{title}</h1>
+<h2>Total Tasks: <span id="count">{count}</span></h2>
 <table class="table tasks">
   <colgroup>
+    <col width="12%" />
+    <col width="210px" />
+    <col width="90px"/>
     <col width="20%" />
-    <col width="20%" />
-    <col width="20%" />
-    <col width="40%" />
+    <col />
   </colgroup>
   <tr>
     <th>Type</th>
     <th>Fileid</th>
-    <th>Created</th>
-    <th>Result</th>
+    <th></th>
+    <th>Tag</th>
+    <th>Result / Error</th>
   </tr>
   {#tasks}
   <tr>
     <td>{type}</td>
-    <td>{fileid}</td>
-    <td>{creationDate}</td>
-    <td>{result}</td>
+    <td><a href="pdfs/{fileid}.html">{fileid}</a>
+    <td><a href="pdfs/{fileid}.pdf">(download)</a></td>
+    <td>{tag}</td>
+    <td>{result}{?error}Error: {error}{/error}</td>
   </tr>
   {/tasks}
 </table>

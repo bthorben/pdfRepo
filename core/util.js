@@ -18,3 +18,10 @@ module.exports.padLeft = function(string, char, length) {
   var padding = new Array(length).join(char);
   return (padding + string).slice(-length);
 }
+
+/**
+ * @return {number} The current time in seconds
+ */
+module.exports.getCurrentTime = function() {
+  return Date.now() / 1000 | 0;
+}

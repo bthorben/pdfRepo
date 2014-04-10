@@ -8,7 +8,6 @@
 
   window.load = function load() {
     stdout = document.getElementById("stdout");
-    queryParams = getQueryParameters();
     // start working from another context to not let the browser load forever
     setTimeout(function () {
       calibrate(function() {
@@ -44,7 +43,6 @@
       processTask(task, function success(error, result) {
         if (error) {
           log("Error processing " + task._id);
-          result = { "Error": error };
         } else {
           log("Finished " + task._id +
               " (fileid: " + task.fileid + ") with result:");
@@ -52,7 +50,11 @@
           log(JSON.stringify(result, null, 2));
           log("Uploading result ...");
         }
-        postData("task/" + task._id + "/result", result, function(error) {
+        var postDataObject = {
+          "result": result,
+          "error": error
+        };
+        postData("task/" + task._id + "/result", postDataObject, function(error) {
           if (error) {
             log("Error!");
           } else {
@@ -71,7 +73,8 @@
       } else {
         if (task == "null") {
           // means: there are no more tasks available
-          log("No more tasks to process");
+          log("No more tasks to process, trying again in 60s ...");
+          setTimeout(getTask.bind(null, callback), 60000);
         } else {
           task = JSON.parse(task);
           callback(task);
@@ -84,6 +87,9 @@
     var taskWindow = window.open("taskDriver.html", "_blank");
     var received = false;
     var processingTimeout;
+    var atPage = 0;
+    var atRun = 0;
+    var totalPages = 0;
 
     resetTimeout();
     window.addEventListener("message", receiveMessage);
@@ -97,9 +103,30 @@
     }
 
     function handleResult(error, result) {
-      callback(error, result);
       window.removeEventListener("message", receiveMessage);
+      window.clearTimeout(processingTimeout);
       taskWindow.close();
+      callback(error, result);
+    }
+
+    function handleReport(message) {
+      var type = message.type;
+      var value = message.value;
+      switch(type) {
+        case "totalPages":
+          totalPages = value;
+          break;
+        case "page":
+          log("Processing page " + value + " / " + totalPages);
+          atPage = value;
+          break;
+        case "run":
+          log("== Run " + value + " ==");
+          atRun = value;
+          break;
+        case "error":
+          log("Error: " + value);
+      }
     }
 
     function receiveMessage(event) {
@@ -108,36 +135,28 @@
       }
       resetTimeout();
       var response = event.data;
-      if (typeof response == "string") {
-        if (response == "ready") {
-          taskWindow.postMessage(task, "*");
-        } else {
-          log(response);
-        }
+      if (typeof response == "string" && response == "ready") {
+        taskWindow.postMessage(task, "*");
       } else {
-        callback(response.error, response.result);
-        window.removeEventListener("message", receiveMessage);
-        window.clearTimeout(processingTimeout);
-        taskWindow.close();
+        if (!response.type) {
+          return
+        }
+        switch(response.type) {
+          case "report":
+            handleReport(response.message);
+            break;
+          case "finish":
+            handleResult(response.error, response.result);
+            break;
+          }
       }
     }
 
   }
 
-  function getQueryParameters() {
-    var qs = window.location.search.substring(1);
-    var kvs = qs.split('&');
-    var params = { };
-    for (var i = 0; i < kvs.length; ++i) {
-      var kv = kvs[i].split('=');
-      params[unescape(kv[0])] = unescape(kv[1]);
-    }
-    return params;
-  }
-
   function log(message) {
-    stdout.innerHTML += message + "\n";
-    stdout.innerHTML = stdout.innerHTML.slice(-10000);
+    stdout.value += message + "\n";
+    stdout.value = stdout.value.slice(-10000);
     stdout.scrollTop = stdout.scrollHeight;
   }
 

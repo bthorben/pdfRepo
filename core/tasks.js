@@ -9,35 +9,34 @@ var Task = require("./task.js").Task;
 var RESEND_TASKS_AFTER_S = 3600;
 
 
-module.exports.getList = function getList(db, req, callback) {
+module.exports.getList = function getList(db, filter, callback) {
   db.collection("tasks", function(err, collection) {
-    var f = collection.find({}, {
-      type: 1, fileid: 1, creationDate: 1, result: 1, _id:0
-    });
+    filter = filter || {};
+    var f = collection.find(filter);
     f.sort([["result", -1]]);
     f.toArray(callback);
   });
 }
 
-module.exports.getCount = function getCount(db, req, callback) {
+module.exports.getCount = function getCount(db, callback) {
   db.collection("tasks", function(err, collection) {
     collection.count(callback);
   });
 }
 
-module.exports.getTask = function getTask(db, req, callback) {
+module.exports.getTask = function getTask(db, callback) {
   db.collection("tasks", function(err, collection) {
-    var currentTime = Date.now() / 1000 | 0;
+    var currentTime = util.getCurrentTime();
     var okayToResend = currentTime - RESEND_TASKS_AFTER_S;
     collection.findOne({
-      "result": null,
+      "completionDate": null,
       $or: [
           { "sentDate": { $lt: okayToResend } },
           { "sentDate": null }
       ]
     }, function(err, task) {
       if (!task) {
-        callback("no task found");
+        callback("null");
         return;
       }
       collection.update({ _id: task._id },
@@ -78,9 +77,14 @@ module.exports.addResult = function addResult(db, req, res) {
         res.send(404, "No such task");
         return;
       }
-      var result = req.body;
+      var result = req.body.result;
+      var error = req.body.error || null;
       collection.update({ "_id": task._id },
-                        { $set: { "result": result }},
+                        { $set: {
+                          "completionDate": util.getCurrentTime(),
+                          "result": result,
+                          "error": error
+                        }},
                         { w: 1 }, function(err, result) {
         if (err || result != 1) {
           console.log("Error while updating result of task");
@@ -97,12 +101,12 @@ module.exports.addResult = function addResult(db, req, res) {
   });
 }
 
-module.exports.insertTaskForAllFiles = function insertTaskForAllFiles(db,
-                                                                      req,
-                                                                      res) {
-  function getAllPdfs(callback) {
+module.exports.insertTaskForAllFiles =
+  function insertTaskForAllFiles(db, req, res) {
+
+  function getAllPdfs(filter, callback) {
     db.collection("pdfs", function(err, pdfs) {
-      var f = pdfs.find({}, { fileid: 1, url: 1, source: 1, _id:0 });
+      var f = pdfs.find(filter, { fileid: 1, url: 1, source: 1, _id:0 });
       f.toArray(function(err, items) {
         callback(items);
       });
@@ -110,11 +114,17 @@ module.exports.insertTaskForAllFiles = function insertTaskForAllFiles(db,
   }
 
   var taskType = req.body.type;
+  var taskTag = req.body.tag;
+  var useOnlySource = req.body.source;
   if (!taskType) {
     res.send(200, "An error has occurred while inserting");
   }
   console.log("getting all pdfs ...");
-  getAllPdfs(function(pdfs) {
+  var filter = {};
+  if (useOnlySource) {
+    filter = {source: useOnlySource};
+  }
+  getAllPdfs(filter, function(pdfs) {
     db.collection("tasks", function(err, tasks) {
       if (err) {
         res.send(200, "An error has occurred while inserting");
@@ -123,7 +133,7 @@ module.exports.insertTaskForAllFiles = function insertTaskForAllFiles(db,
       var currentSecond = Date.now() / 1000 | 0;
       for (var i = 0; i < pdfs.length; i++) {
         var p = pdfs[i];
-        var t = new Task(taskType, p.fileid, currentSecond);
+        var t = new Task(taskType, p.fileid, taskTag, currentSecond);
         tasks.insert(t, { w: 1, wtimeout: 30 }, function result(err, result){
           if (err) {
             res.send(200, "An error has occurred while inserting");
