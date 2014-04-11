@@ -3,7 +3,7 @@ var Busboy = require("busboy");
 var mongo = require("Mongodb");
 var inspect = require("util").inspect;
 var util = require('./util.js');
-
+var pdfs = require("./pdfs.js");
 var Task = require("./task.js").Task;
 
 var RESEND_TASKS_AFTER_S = 3600;
@@ -54,6 +54,22 @@ module.exports.getTask = function getTask(db, callback) {
         }
       });
     });
+  });
+}
+
+module.exports.enrichTasksWithUrl = function enrich(db, tasks, callback) {
+  var tasksFileids = tasks.map(function(t) {
+    return t.fileid;
+  });
+  var fileidToUrlMap = Object.create(null);
+  pdfs.getList(db, { "fileid": { $in: tasksFileids} }, function(err, pdfs) {
+    pdfs.forEach(function(p) {
+      fileidToUrlMap[p.fileid] = p.url;
+    })
+    tasks.forEach(function(t) {
+      t.url = fileidToUrlMap[t.fileid];
+    });
+    callback(tasks);
   });
 }
 

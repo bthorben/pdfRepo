@@ -1,0 +1,101 @@
+{>static_header /}
+
+<div id="masthead">
+  <div class="container">
+      <h1>PDF Repository by Opera
+        <p class="lead">Managing a PDF corpus to benchmark and test PDF.js</p>
+      </h1>
+      <p>We ran extensive tests with PDF.js on {pdfcount} PDFs. We crawled the PDFs in a way so we hope they approximate the most popular PDFs on the internet. This is our first public report of the results, in the hope that its useful for anybody working on PDF.js.</p>
+  </div><!-- /cont -->
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3" id="leftCol">
+      <ul class="nav nav-stacked" id="sidebar">
+        <li><a href="#speed"><i class="icon-chevron-right"></i> Speed Histogram</a></li>
+        <li><a href="#crashed"><i class="icon-chevron-right"></i> Crashing PDFs</a></li>
+        <li><a href="#slow"><i class="icon-chevron-right"></i> 50 slowest PDFs</a></li>
+      </ul>
+    </div>
+
+    <div class="col-md-9">
+      <section id="speed">
+        <h2>Speed Histogram</h1>
+
+        <p>We tested {data.totalPages} pages in {pdfcount} pdfs in 5 runs with an average variance of {data.averageVariance}% against an average page of a calibration document (The Tracemonkey Paper). On a 2.5 Ghz Intel Core i5 with 8g GB or memory this average is 350ms. Good user experience probably ends at like twice this amount of time per page.</p>
+
+        <canvas id="h" width="800" height="500"></canvas>
+        <script>
+        var data = {
+          labels : [{data.buckets}],
+          datasets : [
+            {
+              fillColor : "rgba(151,187,205,0.5)",
+              strokeColor : "rgba(151,187,205,1)",
+              pointColor : "rgba(151,187,205,1)",
+              pointStrokeColor : "#fff",
+              data : [{data.count}]
+            }
+          ]
+        };
+        var ctx = document.getElementById("h").getContext("2d");
+        var myNewChart = new Chart(ctx).Bar(data);
+        </script>
+
+        <table class="table" style="font-size: 11px">
+          <tr>
+            {#data.buckets}
+            <th>{.}</th>
+            {/data.buckets}
+          </tr>
+          <tr>
+            {#data.count}
+            <td>{.}</td>
+            {/data.count}
+          </tr>
+          <tr>
+            {#data.percentage}
+            <td>{.}%</td>
+            {/data.percentage}
+          </tr>
+        </table>
+      </section>
+
+      <section id="crashed">
+        <h2>PDFs, that crashed PDF.js</h1>
+
+        <p>There were {crashedTasks.length} pdfs that crashed the system when we tried to render them:</p>
+        <ul style="word-wrap: break-word; max-width: 100%;">
+          {#crashedTasks}
+          <li>{url}</li>
+          {/crashedTasks}
+        </ul>
+      </section>
+
+      <section id="slow">
+        <h2>The 50 slowest PDFs</h1>
+
+        <p>Sorted by the slowest page that was contained inside the document:</p>
+
+        <table class="table" style="word-wrap: break-word;">
+          <colgroup>
+              <col width="200px" />
+              <col />
+          </colgroup>
+          <tr>
+            <th>Slowest Page</th>
+            <th>Url</th>
+          </tr>
+          {#slowTasks}
+          <tr>
+            <td>{slowestPage} (#{slowestPageNumber})</td>
+            <td>{url}</td>
+          </tr>
+          {/slowTasks}
+        </table>
+      </section>
+    </div>
+  </div>
+</div> <!-- /container -->
+{>static_footer /}

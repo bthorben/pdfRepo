@@ -1,24 +1,20 @@
 {>header /}
 <h1>{title}</h1>
-<h2>Total PDFs: <span id="count">{count}</span></h2>
 <table class="table pdfs">
   <colgroup>
-      <col width="25%" />
-      <col width="160px">
-      <col />
-      <col width="15%" />
+      <col width="200px">
+      <col>
+      <col>
   </colgroup>
   <tr>
+    <th>Slowest Page</th>
     <th colspan="2">Fileid</th>
-    <th>Url</th>
-    <th>Source</th>
   </tr>
   {#pdfs}
   <tr>
+    <td>{slowestPage} (#{slowestPageNumber})</td>
     <td><a href="pdfs/{fileid}.html">{fileid}</a>
     <td><a href="pdfs/{fileid}.pdf">(download)</a></td>
-    <td>{url}</td>
-    <td>{source}</td>
   </tr>
   {/pdfs}
 </table>

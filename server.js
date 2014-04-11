@@ -13,7 +13,7 @@ app.configure(function () {
   app.use(express.urlencoded());
 });
 
-var mongoClient = new mongo.MongoClient(new mongo.Server('localhost', 27017));
+var mongoClient = new mongo.MongoClient(new mongo.Server("localhost", 27017));
 mongoClient.open(function(err, mongoClient) {
   /* Static stuff */
   app.use("/driver", express.static(__dirname + "/driver"));
@@ -21,7 +21,7 @@ mongoClient.open(function(err, mongoClient) {
   var repoDatabase = mongoClient.db("pdfRepo");
   /* Pdf handling */
   app.get("/pdfs", function(req, res) {
-    pdfs.getList(repoDatabase, function(err, items) {
+    pdfs.getList(repoDatabase, {}, function(err, items) {
       res.json(items);
     });
   });

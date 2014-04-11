@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>PdfRepo - {title}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/css/admin.css" rel="stylesheet">
+
+    <style type="text/css">
+      body {
+        border-top: 4px solid #cc0f16;
+        padding-top:50px;
+      }
+
+      #forkme_banner {
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 10px;
+        z-index: 10;
+        padding: 10px 12px 10px 12px;
+        background: #eee;
+        color: black;
+        font-weight: 700;
+        box-shadow: 0 0 10px rgba(0,0,0,.5);
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+      }
+
+      #masthead {
+        min-height:250px;
+      }
+
+      #masthead h1 {
+        font-size: 30px;
+        line-height: 1;
+        padding-top:20px;
+      }
+
+      #masthead .well {
+        margin-top:8%;
+      }
+
+      @media screen and (min-width: 768px) {
+        #masthead h1 {
+          font-size: 50px;
+        }
+      }
+
+      .navbar-bright {
+        background-color:#111155;
+          color:#fff;
+      }
+
+      .affix-top, .affix{
+        position: static;
+      }
+
+      @media (min-width: 979px) {
+        #sidebar.affix-top {
+          position: static;
+          margin-top:30px;
+          width:228px;
+        }
+
+        #sidebar.affix {
+          position: fixed;
+          top:70px;
+          width:228px;
+        }
+      }
+
+      #sidebar li.active {
+        border:0 #eee solid;
+        border-right-width:4px;
+      }
+    </style>
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/0.2.0/Chart.min.js"></script>
+  </head>
+  <body data-spy="scroll" data-target="#side-nav">
+    <a id="forkme_banner" href="https://github.com/bthorben/pdfRepo">View Code on GitHub</a>

@@ -6,7 +6,7 @@ var util = require('./util.js');
 var Pdf = require("./pdf.js").Pdf;
 
 
-module.exports.getList = function getList(db, callback) {
+module.exports.getList = function getList(db, filter, callback) {
   db.collection("pdfs", function(err, collection) {
     var f = collection.find({}, { fileid: 1, url: 1, source: 1, _id:0 });
     f.toArray(callback);

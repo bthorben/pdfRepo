@@ -34,7 +34,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Project name</a>
+          <a class="navbar-brand" href="#">PDF.js Repository by Opera</a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
@@ -51,6 +51,14 @@
                 <li><a href="tasks.html">Show All</a></li>
                 <li class="divider"></li>
                 <li><a href="tasks_failed.html">Failed</a></li>
+                <li><a href="tasks_unfinished.html">Unfinished</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="speed_histogram.html">Speed Histogram</a></li>
+                <li><a href="speed.html">Slowest PDFs</a></li>
               </ul>
             </li>
           </ul>

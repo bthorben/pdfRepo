@@ -30,22 +30,17 @@ mongoClient.open(function(err, mongoClient) {
   app.get("/", function(req, res) {
     pdfs.getCount(repoDatabase, function(err, pdfcount) {
       tasks.getCount(repoDatabase, function(err, taskcount) {
-
-        tasks.getResults(repoDatabase, "benchmark", function(err, results) {
-          var h = data.getHistogramData(results);
-          res.render("index", {
-            "title": "Dashboard",
-            "pdfcount": pdfcount,
-            "taskcount": taskcount,
-            "histogramData": h
-          });
+        res.render("index", {
+          "title": "Dashboard",
+          "pdfcount": pdfcount,
+          "taskcount": taskcount,
         });
-
       })
     });
   });
+
   app.get("/pdfs.html", function(req, res) {
-    pdfs.getList(repoDatabase, req, function(err, pdfs) {
+    pdfs.getList(repoDatabase, {}, function(err, pdfs) {
       res.render("pdfs", {
         "title": "PDFs",
         "count": pdfs.length,
@@ -76,11 +71,68 @@ mongoClient.open(function(err, mongoClient) {
   });
   app.get("/tasks_failed.html", function(req, res) {
     tasks.getList(repoDatabase, { error: { $ne: null }}, function(err, tasks) {
-      console.log(inspect(tasks));
       res.render("tasks", {
         "title": "Failed Tasks",
         "count": tasks.length,
         "tasks": tasks
+      });
+    });
+  });
+  app.get("/tasks_unfinished.html", function(req, res) {
+    tasks.getList(repoDatabase, { result: null, error: null }, function(err, tasks) {
+      res.render("tasks", {
+        "title": "Unfinished Tasks",
+        "count": tasks.length,
+        "tasks": tasks
+      });
+    });
+  });
+
+  app.get("/speed_histogram.html", function(req, res) {
+    tasks.getResults(repoDatabase, "benchmark", function(err, results) {
+      var h = data.getHistogramData(results);
+      res.render("speed_histogram", {
+        "title": "Speed Histogram",
+        "data": h,
+        "pdfcount": results.length
+      });
+    });
+  });
+
+  app.get("/speed.html", function(req, res) {
+    tasks.getList(repoDatabase, { type: "benchmark" }, function(err, tasks) {
+      var pdfs = data.sortBySlowestPage(tasks);
+      res.render("speed", {
+        "title": "PDFs sorted by their slowest page (desc)",
+        "pdfs": pdfs
+      });
+    });
+  });
+
+  app.get("/static.html", function(req, res) {
+    function outputPage(crashedTasks, allTasks) {
+      var slowTasks = data.sortBySlowestPage(allTasks);
+      slowTasks = slowTasks.slice(0, 50);
+      var histogramData = data.getHistogramData(allTasks);
+      res.render("static", {
+        "pdfcount": allTasks.length,
+        "data": histogramData,
+        "crashedTasks": crashedTasks,
+        "slowTasks": slowTasks,
+      });
+    }
+
+    tasks.getList(repoDatabase, {
+      error: { $ne: null }
+    }, function(err, crashedTasks) {
+      tasks.enrichTasksWithUrl(repoDatabase, crashedTasks, function(crashedTasks) {
+        tasks.getList(repoDatabase, {
+          type: "benchmark", result: { $ne: null}
+        }, function(err, allTasks) {
+          tasks.enrichTasksWithUrl(repoDatabase, allTasks, function(allTasks) {
+            outputPage(crashedTasks, allTasks);
+          });
+        });
       });
     });
   });
