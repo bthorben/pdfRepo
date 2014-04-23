@@ -52,7 +52,6 @@ module.exports.getHistogramData = function(results, options) {
   percentage.push((larger / totalPages * 100).toFixed(1));
   counts.push(larger);
 
-  console.log(varianceSum);
   var averageVariance = (varianceSum / totalPages * 100).toFixed(4);
 
   return {
@@ -60,6 +59,7 @@ module.exports.getHistogramData = function(results, options) {
     "count": counts,
     "percentage": percentage,
     "totalPages": totalPages,
+    "totalPdfs": results.length,
     "averageVariance": averageVariance
   };
 }

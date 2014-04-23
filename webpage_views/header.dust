@@ -54,12 +54,8 @@
                 <li><a href="tasks_unfinished.html">Unfinished</a></li>
               </ul>
             </li>
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="speed_histogram.html">Speed Histogram</a></li>
-                <li><a href="speed.html">Slowest PDFs</a></li>
-              </ul>
+            <li>
+              <a href="report.html">Public Report</a>
             </li>
           </ul>
         </div><!--/.nav-collapse -->

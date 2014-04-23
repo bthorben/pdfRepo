@@ -6,13 +6,13 @@ var pdfs = require("./core/pdfs.js");
 var Pdf = require("./core/pdf.js").Pdf;
 var tasks = require("./core/tasks.js");
 var Task = require("./core/task.js").Task;
-var data = require("./core/data.js");
+var report = require("./core/report.js");
 
 var app = express();
 app.engine("dust", cons.dust);
 app.configure(function () {
   app.set("view engine", "dust");
-  app.set("views", __dirname + "/admin/views");
+  app.set("views", __dirname + "/webpage_views");
   app.use(express.logger("dev"));
   app.use(express.json());
   app.use(express.urlencoded());
@@ -22,10 +22,10 @@ var mongoClient = new mongo.MongoClient(new mongo.Server('localhost', 27017));
 mongoClient.open(function(err, mongoClient) {
   var repoDatabase = mongoClient.db("pdfRepo");
   /* Static stuff */
-  app.use("/css", express.static(__dirname + "/admin/css"));
-  app.use("/img", express.static(__dirname + "/admin/img"));
-  app.use("/font", express.static(__dirname + "/admin/fonts"));
-  app.use("/js", express.static(__dirname + "/admin/js"));
+  app.use("/css", express.static(__dirname + "/webpage_static/css"));
+  app.use("/img", express.static(__dirname + "/webpage_static/img"));
+  app.use("/font", express.static(__dirname + "/webpage_static/fonts"));
+  app.use("/js", express.static(__dirname + "/webpage_static/js"));
   /* views */
   app.get("/", function(req, res) {
     pdfs.getCount(repoDatabase, function(err, pdfcount) {
@@ -88,53 +88,13 @@ mongoClient.open(function(err, mongoClient) {
     });
   });
 
-  app.get("/speed_histogram.html", function(req, res) {
-    tasks.getResults(repoDatabase, "benchmark", function(err, results) {
-      var h = data.getHistogramData(results);
-      res.render("speed_histogram", {
-        "title": "Speed Histogram",
-        "data": h,
-        "pdfcount": results.length
-      });
-    });
-  });
-
-  app.get("/speed.html", function(req, res) {
-    tasks.getList(repoDatabase, { type: "benchmark" }, function(err, tasks) {
-      var pdfs = data.sortBySlowestPage(tasks);
-      res.render("speed", {
-        "title": "PDFs sorted by their slowest page (desc)",
-        "pdfs": pdfs
-      });
-    });
-  });
-
-  app.get("/static.html", function(req, res) {
-    function outputPage(crashedTasks, allTasks) {
-      var slowTasks = data.sortBySlowestPage(allTasks);
-      slowTasks = slowTasks.slice(0, 50);
-      var histogramData = data.getHistogramData(allTasks);
-      res.render("static", {
-        "pdfcount": allTasks.length,
-        "data": histogramData,
-        "crashedTasks": crashedTasks,
-        "slowTasks": slowTasks,
-      });
-    }
-
-    tasks.getList(repoDatabase, {
-      error: { $ne: null }
-    }, function(err, crashedTasks) {
-      tasks.enrichTasksWithUrl(repoDatabase, crashedTasks, function(crashedTasks) {
-        tasks.getList(repoDatabase, {
-          type: "benchmark", result: { $ne: null}
-        }, function(err, allTasks) {
-          tasks.enrichTasksWithUrl(repoDatabase, allTasks, function(allTasks) {
-            outputPage(crashedTasks, allTasks);
-          });
-        });
-      });
-    });
+  app.get("/report.html", function(req, res) {
+    tasks.getVersions(repoDatabase, function(err, versions) {
+      versions.sort().reverse();
+      report.getReportData(repoDatabase, versions, versions[0], function(d) {
+        res.render("report", d);
+      })
+    })
   });
 });
 

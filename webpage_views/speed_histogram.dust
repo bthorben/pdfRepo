@@ -1,0 +1,62 @@
+<div id="h" style="width: 800px; height: 500px"></div>
+<script src="js/flotr2.min.js"></script>
+<script>
+  (function basic(container) {
+    var rawdata = [{#data}[{#percentage}{.},{/percentage}],{/data}];
+    var data = [];
+    for(var i = 0; i < rawdata.length; i++) {
+      var row = [];
+      for (var j = 0; j < rawdata[i].length; j++) {
+        var offset = i / rawdata.length;
+        row.push([(j + offset) / 10, rawdata[i][j]]);
+      };
+      data.push({ data: row, label: [{allVersions}][i]});
+    }
+    var labels = [{data[0].buckets}];
+    var graph = Flotr.draw(container, data, {
+      bars : {
+        show : true,
+        shadowSize : 0,
+        barWidth : 0.1 / rawdata.length
+      },
+      legend : {
+        position: "ne"
+      },
+      xaxis: {
+        label: "Speed relativ to calibration"
+      },
+      yaxis: {
+        label: "Percentage of tested pages"
+      },
+      grid: {
+        minorVerticalLines: true
+      }
+    });
+  })(document.getElementById("h"));
+</script>
+
+<table class="table" style="font-size: 11px">
+  <tr>
+    <th>Version</th>
+    {#data[0].buckets}
+    <th>{.}</th>
+    {/data[0].buckets}
+    <th>Total</th>
+  </tr>
+  {#data}
+  <tr>
+    <th>{allVersions[$idx]}</th>
+    {#count}
+    <td>{.}</td>
+    {/count}
+    <td>{totalPages}</td>
+  </tr>
+  <tr>
+    <th></th>
+    {#percentage}
+    <td>{.}%</td>
+    {/percentage}
+    <td></td>
+  </tr>
+  {/data}
+</table>

@@ -1,0 +1,30 @@
+{>report_header /}
+
+<div id="masthead">
+  <div class="container">
+      <h1>PDF Repository by Opera
+        <p class="lead">Managing a PDF corpus to benchmark and test PDF.js</p>
+      </h1>
+      <p>We ran extensive tests with PDF.js on {pdfcount} PDFs. We crawled the PDFs in a way so we hope they approximate the most popular PDFs on the internet. This is our first public report of the results, in the hope that its useful for anybody working on PDF.js.</p>
+  </div><!-- /cont -->
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3" id="leftCol">
+      <ul class="nav nav-stacked" id="sidebar">
+        <li><a href="#speed"><i class="icon-chevron-right"></i> Speed Histogram</a></li>
+        <li><a href="#crashed"><i class="icon-chevron-right"></i> Crashing PDFs</a></li>
+        <li><a href="#slow"><i class="icon-chevron-right"></i> 32 slowest PDFs</a></li>
+      </ul>
+    </div>
+
+    <div class="col-md-9">
+
+      {>report_content /}
+
+    </div>
+  </div>
+</div>
+
+{>report_footer /}

@@ -4,13 +4,15 @@
     function receiveMessage(event) {
       window.task = event.data;
 
-      processTask(task, function(error, result) {
-        event.source.postMessage({
-          "type": "finish",
-          "error": error,
-          "result": result,
-        }, event.origin);
-        window.close();
+      loadPdfjs(task.version, function() {
+        processTask(task, function(error, result) {
+          event.source.postMessage({
+            "type": "finish",
+            "error": error,
+            "result": result,
+          }, event.origin);
+          window.close();
+        });
       });
     }
 
@@ -23,6 +25,37 @@
       window.opener.postMessage("ready", "*");
     }
   };
+
+  function loadPdfjs(versionPath, callback) {
+    function addScript(url) {
+      return new Promise(function(resolve, reject) {
+        var s = document.createElement("script");
+        s.src = "pdf.js/" + versionPath + "/" + url;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    Promise.all([
+      addScript("src/shared/util.js"),
+      addScript("src/shared/colorspace.js"),
+      addScript("src/shared/function.js"),
+      addScript("src/shared/annotation.js"),
+      addScript("src/display/api.js"),
+      addScript("src/display/metadata.js"),
+      addScript("src/display/webgl.js"),
+      addScript("src/display/canvas.js"),
+      addScript("src/display/pattern_helper.js"),
+      addScript("src/display/font_loader.js")
+    ]).then(function() {
+      window.PDFJS.disableWorker = true;
+      window.PDFJS.cMapUrl = "pdf.js/" + versionPath + "/external/bcmaps/";
+      window.PDFJS.cMapPacked = true;
+      window.PDFJS.workerSrc = "pdf.js/" + versionPath + "/src/worker_loader.js";
+      callback();
+    });
+  }
 
   function manualMode(qparams) {
     task = {

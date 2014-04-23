@@ -10,37 +10,14 @@
     stdout = document.getElementById("stdout");
     // start working from another context to not let the browser load forever
     setTimeout(function () {
-      calibrate(function() {
-        work();
-      })
+      work();
     }, 0);
   };
 
-  window.calibrate = function calibrate(callback) {
-    var calibrationTask = {
-      file: CALIBRATION_PDF,
-      type: "calibration"
-    }
-    processTask(calibrationTask, function(error, result) {
-      if (error) {
-        log("Error calibrating, cannot continue");
-        return;
-      }
-      var times = result.timesPerPage, sum = 0, i;
-      for (i = 0; i < times.length; i++) {
-        sum += times[i];
-      }
-      this.baseline = sum / times.length;
-      log("Calibration finished. Baseline: " + this.baseline);
-      callback();
-    })
-  }
-
   window.work = function work() {
     getTask(function(task) {
-      log("Processing " + task._id +
-          " (fileid: " + task.fileid + ")");
-      processTask(task, function success(error, result) {
+
+      function handleTaskResult(error, result) {
         if (error) {
           log("Error processing " + task._id);
         } else {
@@ -62,9 +39,43 @@
           }
           work();
         });
-      });
+      }
+
+      log("Processing " + task._id +
+          " (fileid: " + task.fileid + ")");
+      if (this.version != task.version) {
+        calibrate(task.version, function(newBaseline) {
+          this.version = task.version;
+          this.baseline = newBaseline;
+          processTask(task, handleTaskResult);
+        });
+      } else {
+        processTask(task, handleTaskResult);
+      }
     });
   }
+
+  function calibrate(version, callback) {
+    var calibrationTask = {
+      "file": CALIBRATION_PDF,
+      "type": "calibration",
+      "version": version
+    }
+    processTask(calibrationTask, function(error, result) {
+      if (error) {
+        log("Error calibrating, cannot continue");
+        return;
+      }
+      var times = result.timesPerPage, sum = 0, i;
+      for (i = 0; i < times.length; i++) {
+        sum += times[i];
+      }
+      var baseline = sum / times.length;
+      log("Calibration finished. Baseline: " + baseline);
+      callback(baseline);
+    });
+  }
+
 
   function getTask(callback) {
     makeRequest("task", function(error, task) {

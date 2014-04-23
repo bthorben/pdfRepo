@@ -24,6 +24,12 @@ module.exports.getCount = function getCount(db, callback) {
   });
 }
 
+module.exports.getVersions = function getVersions(db, callback) {
+  db.collection("tasks", function(err, collection) {
+    collection.distinct("version", callback);
+  });
+}
+
 module.exports.getTask = function getTask(db, callback) {
   db.collection("tasks", function(err, collection) {
     var currentTime = util.getCurrentTime();
@@ -131,6 +137,7 @@ module.exports.insertTaskForAllFiles =
 
   var taskType = req.body.type;
   var taskTag = req.body.tag;
+  var version = req.body.version;
   var useOnlySource = req.body.source;
   if (!taskType) {
     res.send(200, "An error has occurred while inserting");
@@ -149,7 +156,7 @@ module.exports.insertTaskForAllFiles =
       var currentSecond = Date.now() / 1000 | 0;
       for (var i = 0; i < pdfs.length; i++) {
         var p = pdfs[i];
-        var t = new Task(taskType, p.fileid, taskTag, currentSecond);
+        var t = new Task(taskType, p.fileid, taskTag, version, currentSecond);
         tasks.insert(t, { w: 1, wtimeout: 30 }, function result(err, result){
           if (err) {
             res.send(200, "An error has occurred while inserting");

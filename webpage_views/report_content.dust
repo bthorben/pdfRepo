@@ -1,0 +1,41 @@
+<section id="speed">
+  <h2>Speed Histogram</h1>
+
+  <p>We tested {totalPages} pages in {pdfcount} pdfs in 5 runs with an average variance of {data.averageVariance}% against an average page of a calibration document (The Tracemonkey Paper). On a 2.5 Ghz Intel Core i5 with 8g GB or memory this average is 350ms. Good user experience probably ends at like twice this amount of time per page.</p>
+
+  {>speed_histogram /}
+</section>
+
+<section id="crashed">
+  <h2>PDFs, that crashed PDF.js</h1>
+
+  <p>There were {crashedTasks.length} pdfs that crashed the system when we tried to render them:</p>
+  <ul style="word-wrap: break-word; max-width: 100%;">
+    {#crashedTasks}
+    <li>{url}</li>
+    {/crashedTasks}
+  </ul>
+</section>
+
+<section id="slow">
+  <h2>The 32 slowest PDFs</h1>
+
+  <p>Sorted by the slowest page that was contained inside the document:</p>
+
+  <table class="table datatable" style="word-wrap: break-word;">
+    <colgroup>
+        <col width="200px" />
+        <col />
+    </colgroup>
+    <tr>
+      <th>Slowest Page</th>
+      <th>Url</th>
+    </tr>
+    {#slowTasks}
+    <tr>
+      <td>{slowestPage} (#{slowestPageNumber})</td>
+      <td>{url}</td>
+    </tr>
+    {/slowTasks}
+  </table>
+</section>
