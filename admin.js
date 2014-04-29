@@ -1,7 +1,7 @@
 var inspect = require("util").inspect;
 var express = require("express");
 var cons = require("consolidate");
-var mongo = require("Mongodb");
+var mongo = require("mongodb");
 var pdfs = require("./core/pdfs.js");
 var Pdf = require("./core/pdf.js").Pdf;
 var tasks = require("./core/tasks.js");
@@ -19,8 +19,8 @@ app.configure(function () {
 });
 
 var mongoClient = new mongo.MongoClient(new mongo.Server('localhost', 27017));
-mongoClient.open(function(err, mongoClient) {
-  var repoDatabase = mongoClient.db("pdfRepo");
+mongoClient.open(function(err, client) {
+  var repoDatabase = client.db("pdfRepo");
   /* Static stuff */
   app.use("/css", express.static(__dirname + "/webpage_static/css"));
   app.use("/img", express.static(__dirname + "/webpage_static/img"));
@@ -30,12 +30,15 @@ mongoClient.open(function(err, mongoClient) {
   app.get("/", function(req, res) {
     pdfs.getCount(repoDatabase, function(err, pdfcount) {
       tasks.getCount(repoDatabase, function(err, taskcount) {
-        res.render("index", {
-          "title": "Dashboard",
-          "pdfcount": pdfcount,
-          "taskcount": taskcount,
+        tasks.getCount(repoDatabase, {result: null, error: null}, function(e, unfinished) {
+          res.render("index", {
+            "title": "Dashboard",
+            "pdfcount": pdfcount,
+            "taskcount": taskcount,
+            "unfinishedcount": unfinished
+          });
         });
-      })
+      });
     });
   });
 
@@ -98,5 +101,5 @@ mongoClient.open(function(err, mongoClient) {
   });
 });
 
-app.listen(8080);
+app.listen(80);
 console.log("PdfRepo Admin is listening on port 8080 ...");

@@ -3,4 +3,6 @@
 <p>Total Pdfs: {pdfcount}</p>
 <p>Total Tasks: {taskcount}</p>
 
+<p>Unfinished Tasks: {unfinishedcount}</p>
+
 {>footer /}

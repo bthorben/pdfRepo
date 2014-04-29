@@ -1,7 +1,7 @@
 var http = require('http');
 var fs = require("fs");
 var util = require('./core/util.js');
-var mongo = require("Mongodb");
+var mongo = require("mongodb");
 var dust = require("dustjs-linkedin");
 var ncp = require("ncp").ncp;
     ncp.limit = 16;

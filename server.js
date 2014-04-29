@@ -1,5 +1,5 @@
 var express = require("express");
-var mongo = require("Mongodb");
+var mongo = require("mongodb");
 var pdfs = require("./core/pdfs.js");
 var Pdf = require("./core/pdf.js").Pdf;
 var tasks = require("./core/tasks.js");
@@ -32,7 +32,11 @@ mongoClient.open(function(err, mongoClient) {
   });
   app.get("/pdfs/:fileid", function(req, res) {
     pdfs.getPdf(repoDatabase, req, function(err, pdf) {
-      res.json(pdf);
+      if (pdf) {
+        res.json(pdf);
+      } else {
+        res.send(404);
+      }
     });
   });
   app.get("/pdfs/:fileid/file", function(req, res) {

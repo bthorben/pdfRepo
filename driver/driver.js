@@ -63,7 +63,8 @@
     }
     processTask(calibrationTask, function(error, result) {
       if (error) {
-        log("Error calibrating, cannot continue");
+        log("Error calibrating, trying again in 60s ...");
+        setTimeout(calibrate.bind(null, version, callback), 60000);
         return;
       }
       var times = result.timesPerPage, sum = 0, i;
@@ -80,7 +81,8 @@
   function getTask(callback) {
     makeRequest("task", function(error, task) {
       if (error) {
-        log("Error getting task, aborting");
+        log("Error getting task, trying again in 60s ...");
+        setTimeout(getTask.bind(null, callback), 60000);
       } else {
         if (task == "null") {
           // means: there are no more tasks available

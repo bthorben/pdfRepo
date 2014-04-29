@@ -1,4 +1,4 @@
-var mongo = require("Mongodb");
+var mongo = require("mongodb");
 var pdfs = require("./pdfs.js");
 var Pdf = require("./pdf.js").Pdf;
 var tasks = require("./tasks.js");
@@ -8,6 +8,7 @@ var data = require("./data.js");
 module.exports.getReportData = function getReport(db, versions, latestVersion,
                                                   callback) {
   var totalPages = 0;
+  var variance = 0;
 
   function createHistogramData(callback, result, i) {
     var result = result ? result : [];
@@ -19,6 +20,7 @@ module.exports.getReportData = function getReport(db, versions, latestVersion,
       var r = data.getHistogramData(tasks);
       result[i] = r;
       totalPages += r.totalPages;
+      variance += parseFloat(r.averageVariance);
       i++;
       if (i >= versions.length) {
         callback(result);
@@ -32,9 +34,11 @@ module.exports.getReportData = function getReport(db, versions, latestVersion,
     var slowTasks = data.sortBySlowestPage(latestTasks);
     slowTasks = slowTasks.slice(0, 32);
     createHistogramData(function (histogramData) {
+      variance = (variance / versions.length).toFixed(2);
       callback({
         "totalPages": totalPages,
         "pdfcount": pdfCount,
+        "variance": variance,
         "latestVersion": latestVersion,
         "allVersions": versions,
         "data": histogramData,

@@ -13,6 +13,10 @@ var PDF_REGEX_TEXT = "q=(http://(?!webcache)(?:\\S(?!\\.pdf))*\\S\\.pdf)";
 var PDF_REGEX = new RegExp(PDF_REGEX_TEXT, "g");
 var DEFAUL_SOURCE = "websearch";
 
+var FIRST_PAGE_TIMEOUT = 10000;
+var SECOND_PAGE_TIMEOUT = 40000;
+var THIRD_PAGE_TIMEOUT = 80000;
+var FOURTH_PAGE_TIMEOUT = 150000;
 
 var arguments = process.argv.slice(2);
 if (arguments.length < 3) {
@@ -39,7 +43,7 @@ function pdfsFromKeywordFile(keywordFilePath, outputFolder, callback) {
   var keywordFile = new lazy(fs.createReadStream(keywordFilePath));
   keywordFile.lines.forEach(function(keyword) {
     console.log("Searching for " + keyword);
-    request_count += 3;
+    request_count += 4;
     doWebsearch(keyword, function(success) {
       if (!success) {
         console.log("Error searching for " + keyword);
@@ -56,15 +60,19 @@ function pdfsFromKeywordFile(keywordFilePath, outputFolder, callback) {
     // page 1
     setTimeout(function() {
       request(query_url + keyword, handleResponse);
-    }, (Math.random() * (20000 - 1000) + 1000));
+    }, (Math.random() * (50000) + FIRST_PAGE_TIMEOUT));
     // page 2
     setTimeout(function() {
       request(query_url + keyword + "&start=10", handleResponse);
-    }, (Math.random() * (50000 - 10000) + 10000));
+    }, (Math.random() * (50000) + SECOND_PAGE_TIMEOUT));
     // page 3
     setTimeout(function() {
       request(query_url + keyword + "&start=20", handleResponse);
-    }, (Math.random() * (80000 - 20000) + 20000));
+    }, (Math.random() * (50000) + THIRD_PAGE_TIMEOUT));
+    // page 4
+    setTimeout(function() {
+      request(query_url + keyword + "&start=20", handleResponse);
+    }, (Math.random() * (50000) + FOURTH_PAGE_TIMEOUT));
 
     function handleResponse(error, response) {
       if (!error && response.statusCode == 200) {
@@ -76,7 +84,7 @@ function pdfsFromKeywordFile(keywordFilePath, outputFolder, callback) {
         }
         callback(true);
       } else {
-        console.log(response.statusCode);
+        console.log(response);
         callback(false)
       }
     }

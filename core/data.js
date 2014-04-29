@@ -52,7 +52,7 @@ module.exports.getHistogramData = function(results, options) {
   percentage.push((larger / totalPages * 100).toFixed(1));
   counts.push(larger);
 
-  var averageVariance = (varianceSum / totalPages * 100).toFixed(4);
+  var averageVariance = varianceSum / totalPages * 100;
 
   return {
     "buckets": buckets,

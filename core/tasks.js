@@ -1,6 +1,6 @@
 var assert = require("assert");
 var Busboy = require("busboy");
-var mongo = require("Mongodb");
+var mongo = require("mongodb");
 var inspect = require("util").inspect;
 var util = require('./util.js');
 var pdfs = require("./pdfs.js");
@@ -18,9 +18,13 @@ module.exports.getList = function getList(db, filter, callback) {
   });
 }
 
-module.exports.getCount = function getCount(db, callback) {
+module.exports.getCount = function getCount(db, filter, callback) {
+  if (typeof filter == "function") {
+    callback = filter;
+    filter = {};
+  }
   db.collection("tasks", function(err, collection) {
-    collection.count(callback);
+    collection.count(filter, callback);
   });
 }
 
