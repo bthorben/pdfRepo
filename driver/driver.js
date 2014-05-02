@@ -6,6 +6,8 @@
   var stdout;
   var queryParams;
 
+  window.baseline = undefined;
+
   window.load = function load() {
     stdout = document.getElementById("stdout");
     // start working from another context to not let the browser load forever
@@ -23,7 +25,7 @@
         } else {
           log("Finished " + task._id +
               " (fileid: " + task.fileid + ") with result:");
-          result.baseline = this.baseline;
+          result.baseline = window.baseline;
           log(JSON.stringify(result, null, 2));
           log("Uploading result ...");
         }
@@ -43,10 +45,9 @@
 
       log("Processing " + task._id +
           " (fileid: " + task.fileid + ")");
-      if (this.version != task.version) {
-        calibrate(task.version, function(newBaseline) {
-          this.version = task.version;
-          this.baseline = newBaseline;
+      if (!window.baseline) {
+        calibrate(function(newBaseline) {
+          window.baseline = newBaseline;
           processTask(task, handleTaskResult);
         });
       } else {
@@ -55,16 +56,16 @@
     });
   }
 
-  function calibrate(version, callback) {
+  function calibrate(callback) {
     var calibrationTask = {
       "file": CALIBRATION_PDF,
       "type": "calibration",
-      "version": version
+      "version": "baseline"
     }
     processTask(calibrationTask, function(error, result) {
       if (error) {
         log("Error calibrating, trying again in 60s ...");
-        setTimeout(calibrate.bind(null, version, callback), 60000);
+        setTimeout(calibrate.bind(null, callback), 60000);
         return;
       }
       var times = result.timesPerPage, sum = 0, i;
