@@ -48,10 +48,15 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tasks <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><a href="/tasks.html">Show All</a></li>
+                <li><a href="/tasks/all.html">Show All</a></li>
                 <li class="divider"></li>
-                <li><a href="/tasks_failed.html">Failed</a></li>
-                <li><a href="/tasks_unfinished.html">Unfinished</a></li>
+                <li><a href="/tasks/unfinished.html">Unfinished</a></li>
+                {#versions}
+                <li class="divider"></li>
+                <li class="nav-header">Version {.}</li>
+                <li><a href="/tasks/{.}/failed.html">Failed</a></li>
+                <li><a href="/tasks/{.}/slow.html">Pagespeed</a></li>
+                {/versions}
               </ul>
             </li>
             <li>

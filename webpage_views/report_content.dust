@@ -1,7 +1,7 @@
 <section id="speed">
   <h2>Speed Histogram</h1>
 
-  <p>We tested {totalPages} pages in {pdfcount} pdfs in 5 runs with an average variance of {variance}% against an average page of a calibration document (The Tracemonkey Paper). On a 2.5 Ghz Intel Core i5 with 8g GB or memory this average is 350ms. Good user experience probably ends at like twice this amount of time per page.</p>
+  <p>We tested {totalPages} pages in {pdfcount} pdfs in 5 runs with an average variance of {variance}% against an average page of a calibration document (The Tracemonkey Paper). On a 2.5 Ghz Intel Core i5 with 8g GB or memory this average is 300ms. Good user experience probably ends at like 3 - 4 times this amount of time per page.</p>
 
   {>speed_histogram /}
 </section>

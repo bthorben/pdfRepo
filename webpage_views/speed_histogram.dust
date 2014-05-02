@@ -12,7 +12,6 @@
       };
       data.push({ data: row, label: [{allVersions}][i]});
     }
-    var labels = [{data[0].buckets}];
     var graph = Flotr.draw(container, data, {
       bars : {
         show : true,
@@ -26,7 +25,9 @@
         label: "Speed relativ to calibration"
       },
       yaxis: {
-        label: "Percentage of tested pages"
+        label: "Percentage of tested pages",
+        min: 0,
+        autoscaleMargin: 1
       },
       grid: {
         minorVerticalLines: true

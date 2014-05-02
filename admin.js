@@ -7,6 +7,7 @@ var Pdf = require("./core/pdf.js").Pdf;
 var tasks = require("./core/tasks.js");
 var Task = require("./core/task.js").Task;
 var report = require("./core/report.js");
+var data = require("./core/data.js");
 
 var app = express();
 app.engine("dust", cons.dust);
@@ -21,17 +22,23 @@ app.configure(function () {
 var mongoClient = new mongo.MongoClient(new mongo.Server('localhost', 27017));
 mongoClient.open(function(err, client) {
   var repoDatabase = client.db("pdfRepo");
-  /* Static stuff */
   app.use("/css", express.static(__dirname + "/webpage_static/css"));
   app.use("/img", express.static(__dirname + "/webpage_static/img"));
   app.use("/font", express.static(__dirname + "/webpage_static/fonts"));
   app.use("/js", express.static(__dirname + "/webpage_static/js"));
-  /* views */
+
+  function render(res, page, params) {
+    tasks.getVersions(repoDatabase, function(err, versions) {
+      params.versions = versions;
+      res.render(page, params);
+    });
+  }
+
   app.get("/", function(req, res) {
     pdfs.getCount(repoDatabase, function(err, pdfcount) {
       tasks.getCount(repoDatabase, function(err, taskcount) {
         tasks.getCount(repoDatabase, {result: null, error: null}, function(e, unfinished) {
-          res.render("index", {
+          render(res, "index", {
             "title": "Dashboard",
             "pdfcount": pdfcount,
             "taskcount": taskcount,
@@ -44,7 +51,7 @@ mongoClient.open(function(err, client) {
 
   app.get("/pdfs.html", function(req, res) {
     pdfs.getList(repoDatabase, {}, function(err, pdfs) {
-      res.render("pdfs", {
+      render(res, "pdfs", {
         "title": "PDFs",
         "count": pdfs.length,
         "pdfs": pdfs
@@ -53,7 +60,7 @@ mongoClient.open(function(err, client) {
   });
   app.get("/pdfs/:fileid.html", function(req, res) {
     pdfs.getPdf(repoDatabase, req, function(err, pdf) {
-      res.render("detail", {
+      render(res, "detail", {
         "title": "PDF: " + req.params.fileid,
         "object": JSON.stringify(pdf, null, 2),
       });
@@ -63,27 +70,19 @@ mongoClient.open(function(err, client) {
     pdfs.getPdffile(repoDatabase, req, res);
   });
 
-  app.get("/tasks.html", function(req, res) {
+  app.get("/tasks/all.html", function(req, res) {
     tasks.getList(repoDatabase, {}, function(err, tasks) {
-      res.render("tasks", {
+      render(res, "tasks", {
         "title": "Tasks",
         "count": tasks.length,
         "tasks": tasks
       });
     });
   });
-  app.get("/tasks_failed.html", function(req, res) {
-    tasks.getList(repoDatabase, { error: { $ne: null }}, function(err, tasks) {
-      res.render("tasks", {
-        "title": "Failed Tasks",
-        "count": tasks.length,
-        "tasks": tasks
-      });
-    });
-  });
-  app.get("/tasks_unfinished.html", function(req, res) {
+
+  app.get("/tasks/unfinished.html", function(req, res) {
     tasks.getList(repoDatabase, { result: null, error: null }, function(err, tasks) {
-      res.render("tasks", {
+      render(res, "tasks", {
         "title": "Unfinished Tasks",
         "count": tasks.length,
         "tasks": tasks
@@ -91,11 +90,39 @@ mongoClient.open(function(err, client) {
     });
   });
 
+  app.get("/tasks/:version/failed.html", function(req, res) {
+    tasks.getList(repoDatabase, {
+      error: { $ne: null },
+      version: req.params.version
+    }, function(err, tasks) {
+      render(res, "tasks", {
+        "title": "Failed Tasks",
+        "count": tasks.length,
+        "tasks": tasks
+      });
+    });
+  });
+
+  app.get("/tasks/:version/slow.html", function(req, res) {
+    tasks.getList(repoDatabase, {
+      result: { $ne: null },
+      version: req.params.version
+    }, function(err, allTasksForVersion) {
+      tasks.enrichTasksWithUrl(repoDatabase, allTasksForVersion,
+                               function(allTasksForVersion) {
+        var slowTasks = data.sortBySlowestPage(allTasksForVersion);
+        render(res, "slow_tasks", {
+          "title": "PDFs by slowest page",
+          "slowTasks": slowTasks
+        });
+      });
+    });
+  });
+
   app.get("/report.html", function(req, res) {
     tasks.getVersions(repoDatabase, function(err, versions) {
-      versions.sort().reverse();
       report.getReportData(repoDatabase, versions, versions[0], function(d) {
-        res.render("report", d);
+        render(res, "report", d);
       })
     })
   });

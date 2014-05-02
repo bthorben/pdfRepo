@@ -30,7 +30,12 @@ module.exports.getCount = function getCount(db, filter, callback) {
 
 module.exports.getVersions = function getVersions(db, callback) {
   db.collection("tasks", function(err, collection) {
-    collection.distinct("version", callback);
+    collection.distinct("version", function(err, versions) {
+      if (versions) {
+        versions.sort().reverse();
+      }
+      callback(err, versions);
+    });
   });
 }
 

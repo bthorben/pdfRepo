@@ -1,0 +1,22 @@
+{>header /}
+<h1>{title}</h1>
+<table class="table datatable" style="word-wrap: break-word;">
+  <colgroup>
+      <col width="200px" />
+      <col width="230px" />
+      <col />
+  </colgroup>
+  <tr>
+    <th>Slowest Page</th>
+    <th>Fileid</th>
+    <th>Url</th>
+  </tr>
+  {#slowTasks}
+  <tr>
+    <td>{slowestPage} (#{slowestPageNumber})</td>
+    <td><a href="/pdfs/{fileid}.pdf">{fileid}</a>
+    <td>{url}</td>
+  </tr>
+  {/slowTasks}
+</table>
+{>footer /}

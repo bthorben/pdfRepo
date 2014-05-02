@@ -1,13 +1,13 @@
 var Task = require("./task.js").Task;
 
-module.exports.getHistogramData = function(results, options) {
+module.exports.getHistogramData = function(tasks, options) {
   options = options || {};
   var i, j;
   var normalizedData = [];
   var varianceSum = 0;
-  for (i = 0; i < results.length; i++) {
-    var r = results[i].result;
-    if (results.Error) {
+  for (i = 0; i < tasks.length; i++) {
+    var r = tasks[i].result;
+    if (tasks[i].Error) {
       continue;
     }
     var times = r.timesPerPage;
@@ -25,10 +25,10 @@ module.exports.getHistogramData = function(results, options) {
     };
   };
 
-  normalizedData.sort();
+  normalizedData.sort(function(a,b){return a - b});
 
-  var numberOfBuckets = options.numberOfBuckets || 22;
-  var maxValue = options.maxValue || 2.2;
+  var numberOfBuckets = options.numberOfBuckets || 15;
+  var maxValue = options.maxValue || 3;
   var step = maxValue / numberOfBuckets;
 
   var buckets = [];
@@ -43,11 +43,11 @@ module.exports.getHistogramData = function(results, options) {
       count++;
       j++;
     }
-    buckets.push("'" + smallerThan.toFixed(1) + "x'");
+    buckets.push(smallerThan.toFixed(1) + "x");
     percentage.push((count / totalPages * 100).toFixed(1));
     counts.push(count);
   };
-  buckets.push("'Slower'");
+  buckets.push("Slower");
   var larger = normalizedData.length - j;
   percentage.push((larger / totalPages * 100).toFixed(1));
   counts.push(larger);
@@ -59,7 +59,7 @@ module.exports.getHistogramData = function(results, options) {
     "count": counts,
     "percentage": percentage,
     "totalPages": totalPages,
-    "totalPdfs": results.length,
+    "totalPdfs": tasks.length,
     "averageVariance": averageVariance
   };
 }
