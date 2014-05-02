@@ -8,7 +8,7 @@
       var row = [];
       for (var j = 0; j < rawdata[i].length; j++) {
         var offset = i / rawdata.length;
-        row.push([(j + offset) / 10, rawdata[i][j]]);
+        row.push([(j + offset) / 5.1, rawdata[i][j]]);
       };
       data.push({ data: row, label: [{allVersions}][i]});
     }
@@ -16,7 +16,7 @@
       bars : {
         show : true,
         shadowSize : 0,
-        barWidth : 0.1 / rawdata.length
+        barWidth : 0.2 / rawdata.length
       },
       legend : {
         position: "ne"
