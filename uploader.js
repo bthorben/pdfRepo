@@ -17,7 +17,12 @@ var sem = require("semaphore")(4);
 http.globalAgent.maxSockets = 10000;
 
 var argv = require("optimist")
-    .usage("Usage: $0 --host [string] --folder [string] -f  --source [string] --start [num] --end [num]")
+    .usage("Usage:" +
+           " $0" +
+           " --host [string]" +
+           " --folder [string]" +
+           " -f  --source [string]" +
+           " --start [num] --end [num]");
     .demand(["host", "folder"])
     .boolean("f")
     .argv;
