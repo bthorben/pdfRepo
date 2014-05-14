@@ -5,11 +5,16 @@
 
   var stdout;
   var queryParams;
+  var host = "localhost:3000";
 
   window.baseline = undefined;
 
   window.load = function load() {
     stdout = document.getElementById("stdout");
+    var qparams = getQueryParameters();
+    if (qparams.host) {
+      host = decodeURIComponent(qparams.host);
+    }
     // start working from another context to not let the browser load forever
     setTimeout(function () {
       work();
@@ -172,6 +177,7 @@
     stdout.value += message + "\n";
     stdout.value = stdout.value.slice(-10000);
     stdout.scrollTop = stdout.scrollHeight;
+    postData("log", message);
   }
 
   function makeRequest(target, callback) {
@@ -183,7 +189,7 @@
     r.onload = c.bind(null, false);
     r.onerror = c.bind(null, true);
 
-    r.open("GET", "../" + target);
+    r.open("GET", "http://" + host + "/" + target);
     r.send();
   }
 
@@ -196,8 +202,27 @@
     r.onload = c.bind(null, false);
     r.onerror = c.bind(null, true);
 
-    r.open("POST", "../" + target);
-    r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    r.send(JSON.stringify(object));
+    r.open("POST", "http://" + host + "/" + target);
+    if (typeof object == "object") {
+      r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      r.send(JSON.stringify(object));
+    } else {
+      var text = "m=" + object;
+      r.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      r.setRequestHeader("Content-length", text.length);
+      r.setRequestHeader("Connection", "close");
+      r.send(text);
+    }
+  }
+
+  function getQueryParameters() {
+    var qs = window.location.search.substring(1);
+    var kvs = qs.split('&');
+    var params = { };
+    for (var i = 0; i < kvs.length; ++i) {
+      var kv = kvs[i].split('=');
+      params[unescape(kv[0])] = unescape(kv[1]);
+    }
+    return params;
   }
 })();

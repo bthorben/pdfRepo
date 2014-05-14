@@ -1,6 +1,6 @@
 var http = require('http');
 var fs = require("fs");
-var util = require('./core/util.js');
+var util = require('./util/util.js');
 var mongo = require("mongodb");
 var dust = require("dustjs-linkedin");
 var ncp = require("ncp").ncp;

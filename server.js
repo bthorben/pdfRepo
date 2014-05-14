@@ -13,6 +13,11 @@ app.configure(function () {
   app.use(express.urlencoded());
 });
 
+app.use(function(req, res, next){
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  next();
+});
+
 var mongoClient = new mongo.MongoClient(new mongo.Server("localhost", 27017));
 mongoClient.open(function(err, mongoClient) {
   /* Static stuff */

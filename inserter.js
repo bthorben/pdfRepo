@@ -5,7 +5,7 @@ var fs = require("fs");
 var mongo = require("mongodb");
 var Pdf = require("./core/pdf.js").Pdf;
 var request = require("request");
-var util = require("./core/util.js");
+var util = require("./util/util.js");
 
 // max uploads
 var sem = require("semaphore")(1);

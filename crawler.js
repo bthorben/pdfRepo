@@ -2,7 +2,7 @@ var crypto = require("crypto");
 var fs  = require("fs");
 var http = require("http");
 var lazy = require("lazy");
-var Pdf = require("./core/pdf.js").Pdf;
+var Pdf = require("./util/pdf.js").Pdf;
 var request = require("request");
 // max download connections
 var downloadSem = require("semaphore")(32);

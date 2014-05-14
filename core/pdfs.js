@@ -1,7 +1,7 @@
 var Busboy = require("busboy");
 var mongo = require("mongodb");
 var inspect = require("util").inspect;
-var util = require('./util.js');
+var util = require('../util/util.js');
 
 var Pdf = require("./pdf.js").Pdf;
 
