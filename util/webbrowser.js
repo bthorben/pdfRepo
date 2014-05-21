@@ -44,6 +44,7 @@ WebBrowser.prototype = {
       fs.mkdirSync(this.tmpDir);
     }
     this.process = this.startProcess(url);
+    console.log("Started Browser as " + this.process.pid);
   },
   getProfileDir: function () {
     if (!this.profileDir) {
